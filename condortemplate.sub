@@ -1,0 +1,21 @@
+executable              = scripttorun.sh
+arguments               = $(ProcId)
+
+output                  = output/$(ClusterId).$(ProcId).out
+error                   = error/$(ClusterId).$(ProcId).err
+log                     = log/$(ClusterId).$(ProcId).log
+
+request_memory          = 4000M
+
+getenv                  = True
+
+#Job flavours are listed here.  Search for "flavour" with British spelling
+#http://batchdocs.web.cern.ch/batchdocs/local/submit.html
+#has to be in quotes
++JobFlavour             = "tomorrow"
+
+#https://www-auth.cs.wisc.edu/lists/htcondor-users/2010-September/msg00009.shtml
+periodic_remove         = JobStatus == 5
+WhenToTransferOutput    = ON_EXIT_OR_EVICT
+
+queue 100
