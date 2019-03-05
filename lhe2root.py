@@ -57,7 +57,7 @@ try:
 
   for inputfile in args.inputfile:
     print inputfile
-    with LHEFile_JHUGenVBFVH(inputfile, isgen=args.useflavor, reusemela=True) as f:
+    with LHEFile_JHUGenVBFVH(inputfile, isgen=args.use_flavor, reusemela=True) as f:
       for i, event in enumerate(f):
         if i != 0 and i % 1000 == 0:
           print "Processed", i, "events"
