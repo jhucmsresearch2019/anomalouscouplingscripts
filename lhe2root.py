@@ -35,7 +35,12 @@ try:
     branchnames_float += ("mV", "mVstar")
   if args.vbf:
     branchnames_float += ("q2V1", "q2V2")
-  branchnames_float += ("pg1", "pg4", "pg1g4", "D0minus", "DCP")
+  branchnames_float += (
+    "pg1", "pg4", "pg1g4", "D0minus", "DCP",
+    "pxH",  "pyH",  "pzH",  "EH",
+    "pxj1", "pyj1", "pzj1", "Ej1",
+    "pxj2", "pyj2", "pzj2", "Ej2",
+  )
 
   branchnames_int = ()
 
@@ -91,6 +96,24 @@ try:
         elif args.vbf:
           branches["q2V1"][0], branches["q2V2"][0], branches["costheta1"][0], branches["costheta2"][0], branches["Phi"][0], branches["costhetastar"][0], branches["Phi1"][0]= event.computeVBFAngles()
           branches["HJJpz"][0] = sum((particle.second for particle in itertools.chain(event.daughters, event.associated)), ROOT.TLorentzVector()).Pz()
+
+        pH = sum((particle.second for particle in event.daughters), ROOT.TLorentzVector())
+        branches["pxH"][0] = pH.Px()
+        branches["pyH"][0] = pH.Py()
+        branches["pzH"][0] = pH.Pz()
+        branches["EH"][0] = pH.E()
+
+        pj1 = event.associated[0].second
+        branches["pxj1"][0] = pj1.Px()
+        branches["pyj1"][0] = pj1.Py()
+        branches["pzj1"][0] = pj1.Pz()
+        branches["Ej1"][0] = pj1.E()
+
+        pj2 = event.associated[1].second
+        branches["pxj2"][0] = pj2.Px()
+        branches["pyj2"][0] = pj2.Py()
+        branches["pzj2"][0] = pj2.Pz()
+        branches["Ej2"][0] = pj2.E()
 
         t.Fill()
 
