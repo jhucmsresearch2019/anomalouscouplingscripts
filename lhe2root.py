@@ -169,6 +169,11 @@ try:
         event.ghz4 = g4
         branches["pg1g4"][0] = event.computeProdP() - branches["pg1"][0] - branches["pg4"][0]
 
+        if branches["pg1"][0] == branches["pg4"][0] == 0:
+          for _ in event.daughters: print _.first,; _.second.Print()
+          for _ in event.associated: print _.first,; _.second.Print()
+          continue
+
         branches["D0minus"][0] = branches["pg1"][0] / (branches["pg1"][0] + branches["pg4"][0])
         branches["DCP"][0] = branches["pg1g4"][0] / (2 * (branches["pg1"][0] * branches["pg4"][0]) ** 0.5)
 
