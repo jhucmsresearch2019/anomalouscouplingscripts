@@ -11,11 +11,12 @@ if __name__ == "__main__":
   g.add_argument("--zh", action="store_true")
   g.add_argument("--wh", action="store_true")
   parser.add_argument("--use-flavor", action="store_true")
+  parser.add_argument("--CJLST", action="store_true")
   args = parser.parse_args()
 
   if os.path.exists(args.outputfile): raise IOError(args.outputfile+" already exists")
   for _ in args.inputfile:
-    if not os.path.exists(_): raise IOError(_+" doesn't exist")
+    if not os.path.exists(_) and not args.CJLST: raise IOError(_+" doesn't exist")
 
 from array import array
 import itertools
@@ -23,7 +24,87 @@ import itertools
 import ROOT
 
 from lhefile import LHEFile_JHUGenVBFVH, LHEFile_Hwithdecay
-from mela import TVar
+from mela import Mela, SimpleParticle_t, SimpleParticleCollection_t, TVar
+
+def tlvfromptetaphim(pt, eta, phi, m):
+  result = ROOT.TLorentzVector()
+  result.SetPtEtaPhiM(pt, eta, phi, m)
+  return result
+
+class Event(object):
+  doneinit = False
+  def __init__(self, mela, daughters, associated, mothers, isgen):
+    self.daughters = daughters
+    self.associated = associated
+    self.mothers = mothers
+    self.isgen = isgen
+    self.mela = mela
+    self.mela.setInputEvent(daughters, associated, mothers, isgen)
+    self.doneinit = True
+
+  def __getattr__(self, attr):
+    return getattr(self.mela, attr)
+
+  def __setattr__(self, attr, value):
+    if self.doneinit:
+      return setattr(self.mela, attr, value)
+    return super(Event, self).__setattr__(attr, value)
+
+class CJLSTFile_VBFVH(object):
+  __melas = {}
+  def __init__(self, filename, *melaargs, **kwargs):
+    self.isgen = kwargs.pop("isgen", True)
+    reusemela = kwargs.pop("reusemela", False)
+    if kwargs: raise ValueError("Unknown kwargs: " + ", ".join(kwargs))
+    self.filename = filename
+    if reusemela and melaargs in self.__melas:
+      self.mela = self.__melas[melaargs]
+    else:
+      self.__melas[melaargs] = self.mela = Mela(*melaargs)
+
+    self.f = None
+
+  def __enter__(self):
+    self.f = ROOT.TFile.Open(self.filename)
+    self.t = self.f.Get("ZZTree/candTree")
+    return self
+
+  def __exit__(self, *args, **kwargs):
+    return self.f.Close()
+
+  def __iter__(self):
+    for i, entry in enumerate(self.t):
+      try:
+        if self.isgen:
+          raise NotImplementedError
+        else:
+          if len(entry.JetPt) < 2: continue
+          yield Event(
+            self.mela,
+            SimpleParticleCollection_t(
+              SimpleParticle_t(id, tlvfromptetaphim(pt, eta, phi, 0))
+                for pt, eta, phi, id in itertools.izip(entry.LepPt, entry.LepEta, entry.LepPhi, entry.LepLepId)
+            ),
+            SimpleParticleCollection_t(
+              SimpleParticle_t(id, tlvfromptetaphim(pt, eta, phi, m))
+                for pt, eta, phi, m, id in itertools.chain(
+                  itertools.izip(entry.JetPt, entry.JetEta, entry.JetPhi, entry.JetMass, (0, 0)),
+#                  itertools.izip(entry.ExtraLepPt, entry.ExtraLepEta, entry.ExtraLepPhi, itertools.repeat(0), entry.ExtraLepLepId),
+                )
+            ),
+            None,
+            False,
+          )
+      except GeneratorExit:
+        raise
+      except:
+        self.t.Show()
+        raise
+      finally:
+        try:
+          self.mela.resetInputEvent()
+        except:
+          pass
 
 bad = False
 try:
@@ -60,9 +141,11 @@ try:
   if args.vbf:
     g4 = 0.297979
 
+  fileclass = CJLSTFile_VBFVH if args.CJLST else LHEFile_JHUGenVBFVH
+
   for inputfile in args.inputfile:
     print inputfile
-    with LHEFile_JHUGenVBFVH(inputfile, isgen=args.use_flavor, reusemela=True) as f:
+    with fileclass(inputfile, isgen=args.use_flavor, reusemela=True) as f:
       for i, event in enumerate(f):
         if i != 0 and i % 1000 == 0:
           print "Processed", i, "events"
