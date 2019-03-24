@@ -117,7 +117,7 @@ try:
   if args.vbf:
     branchnames_float += ("q2V1", "q2V2")
   branchnames_float += (
-    "pg1", "pg4", "pg1g4", "D0minus", "DCP",
+    "pg1", "pg4", "pg1g4", "D0minus", "DCP", "DCP_old",
     "pxH",  "pyH",  "pzH",  "EH",
     "pxj1", "pyj1", "pzj1", "Ej1",
     "pxj2", "pyj2", "pzj2", "Ej2",
@@ -176,6 +176,7 @@ try:
 
         branches["D0minus"][0] = branches["pg1"][0] / (branches["pg1"][0] + branches["pg4"][0])
         branches["DCP"][0] = branches["pg1g4"][0] / (2 * (branches["pg1"][0] * branches["pg4"][0]) ** 0.5)
+        branches["DCP_old"][0] = branches["pg1g4"][0] / (branches["pg1"][0] + branches["pg4"][0])
 
         if args.zh or args.wh:
           branches["costheta1"][0], branches["costheta2"][0], branches["Phi"][0], branches["costhetastar"][0], branches["Phi1"][0]= event.computeVHAngles(process)
