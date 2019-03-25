@@ -12,6 +12,7 @@ if __name__ == "__main__":
   g.add_argument("--wh", action="store_true")
   parser.add_argument("--use-flavor", action="store_true")
   parser.add_argument("--CJLST", action="store_true")
+  parser.add_argument("--reweight-to", choices="fa3-0.5")
   args = parser.parse_args()
 
   if os.path.exists(args.outputfile): raise IOError(args.outputfile+" already exists")
@@ -80,7 +81,7 @@ class CJLSTFile_VBFVH(object):
           raise NotImplementedError
         else:
           if len(entry.JetPt) < 2: continue
-          if args.reweightto == "fa3-0.5":
+          if args.reweight_to == "fa3-0.5":
             if args.vbf:
               weight = entry.p_Gen_VBF_SIG_ghz1_1_JHUGen + g4**2 * entry.p_Gen_VBF_SIG_ghz4_1_JHUGen - g4 * entry.p_Gen_VBF_SIG_ghz1_1_ghz4_1_JHUGen
           elif args.reweightto is None:
