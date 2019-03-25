@@ -33,7 +33,7 @@ def tlvfromptetaphim(pt, eta, phi, m):
 
 class Event(object):
   doneinit = False
-  def __init__(self, mela, daughters, associated, mothers, isgen):
+  def __init__(self, mela, daughters, associated, mothers, isgen, weight=1):
     self.daughters = daughters
     self.associated = associated
     self.mothers = mothers
@@ -41,6 +41,7 @@ class Event(object):
     self.mela = mela
     self.mela.setInputEvent(daughters, associated, mothers, isgen)
     self.doneinit = True
+    self.weight = weight
 
   def __getattr__(self, attr):
     return getattr(self.mela, attr)
@@ -79,6 +80,11 @@ class CJLSTFile_VBFVH(object):
           raise NotImplementedError
         else:
           if len(entry.JetPt) < 2: continue
+          if args.reweightto == "fa3-0.5":
+            if args.vbf:
+              weight = entry.p_Gen_VBF_SIG_ghz1_1_JHUGen + g4**2 * entry.p_Gen_VBF_SIG_ghz4_1_JHUGen - g4 * entry.p_Gen_VBF_SIG_ghz1_1_ghz4_1_JHUGen
+          elif args.reweightto is None:
+            weight = 1
           yield Event(
             self.mela,
             SimpleParticleCollection_t(
@@ -94,6 +100,7 @@ class CJLSTFile_VBFVH(object):
             ),
             None,
             False,
+            weight=weight,
           )
       except GeneratorExit:
         raise
@@ -121,6 +128,7 @@ try:
     "pxH",  "pyH",  "pzH",  "EH",
     "pxj1", "pyj1", "pzj1", "Ej1",
     "pxj2", "pyj2", "pzj2", "Ej2",
+    "weight",
   )
 
   branchnames_int = ()
@@ -203,6 +211,8 @@ try:
         branches["pyj2"][0] = pj2.Py()
         branches["pzj2"][0] = pj2.Pz()
         branches["Ej2"][0] = pj2.E()
+
+        branches["weight"][0] = event.weight
 
         t.Fill()
 
