@@ -39,10 +39,10 @@ class Event(object):
     self.associated = associated
     self.mothers = mothers
     self.isgen = isgen
+    self.weight = weight
     self.mela = mela
     self.mela.setInputEvent(daughters, associated, mothers, isgen)
     self.doneinit = True
-    self.weight = weight
 
   def __getattr__(self, attr):
     return getattr(self.mela, attr)
