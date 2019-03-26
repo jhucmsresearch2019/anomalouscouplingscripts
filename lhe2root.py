@@ -83,7 +83,7 @@ class CJLSTFile_VBFVH(object):
           if len(entry.JetPt) < 2: continue
           if args.reweight_to == "fa3-0.5":
             if args.vbf:
-              weight = entry.p_Gen_VBF_SIG_ghz1_1_JHUGen + g4**2 * entry.p_Gen_VBF_SIG_ghz4_1_JHUGen - g4 * entry.p_Gen_VBF_SIG_ghz1_1_ghz4_1_JHUGen
+              weight = entry.p_Gen_VBF_SIG_ghv1_1_JHUGen + g4**2 * entry.p_Gen_VBF_SIG_ghv4_1_JHUGen - g4 * entry.p_Gen_VBF_SIG_ghv1_1_ghv4_1_JHUGen
           elif args.reweightto is None:
             weight = 1
           yield Event(
